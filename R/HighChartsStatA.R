@@ -170,7 +170,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
       });
       var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(2);  // Check if avg is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Mittelwert:</i></span> <i><b>' + avgFormatted + '</b></i>';
+      s += '<br/><span style=\"font-weight: normal;\"><i>Durchschnitt:</i></span> <i><b>' + avgFormatted + '</b></i>';
       return s;
     }")
                else JS("
@@ -210,9 +210,14 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         legend = list(itemStyle = list(fontSize = "12px", color = "#666666")),
         tooltip = list(backgroundColor = "#ffffff", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8)
       )
-    ) %>%
-    hc_credits(enabled = TRUE, text = source_text, position = list(align = "left", x = 10, y = -5),
-               style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))  # Adjusted style to match axis labels
+    )
+
+  # Increase bottom margin to accommodate source text with controlled distance
+  hc <- hc %>%
+    hc_chart(marginBottom = 80) %>%
+    hc_credits(enabled = TRUE, text = source_text,
+               position = list(align = "left", x = 35, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
+               style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
 
   return(hc)
 }
@@ -398,9 +403,14 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
         legend = list(itemStyle = list(fontSize = "12px", color = "#666666")),
         tooltip = list(backgroundColor = "#ffffff", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8)
       )
-    ) %>%
-    hc_credits(enabled = TRUE, text = source_text, position = list(align = "left", x = 10, y = -5),
-               style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))  # Adjusted style to match axis labels
+    )
+
+  # Increase bottom margin to accommodate source text with controlled distance
+  hc <- hc %>%
+    hc_chart(marginBottom = 80) %>%
+    hc_credits(enabled = TRUE, text = source_text,
+               position = list(align = "left", x = 35, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
+               style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
 
   return(hc)
 }

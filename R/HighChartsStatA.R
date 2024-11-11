@@ -216,7 +216,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
   hc <- hc %>%
     hc_chart(marginBottom = 80) %>%
     hc_credits(enabled = TRUE, text = source_text,
-               position = list(align = "left", x = 35, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
+               position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
 
   return(hc)
@@ -409,7 +409,7 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
   hc <- hc %>%
     hc_chart(marginBottom = 80) %>%
     hc_credits(enabled = TRUE, text = source_text,
-               position = list(align = "left", x = 35, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
+               position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
 
   return(hc)

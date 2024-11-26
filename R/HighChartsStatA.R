@@ -26,11 +26,11 @@ insert_line_breaks <- function(label, max_length = 20) {
   return(paste(lines, collapse = "<br/>"))
 }
 
-# Define the function
+# define the function:
 StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, title = "Stacked Column Chart", subtitle = NULL,
                       x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
                       palette = "viridis", stacked = TRUE, horizontal = FALSE, source_text = "Source",
-                      background_transparent = FALSE, legend_position = "right", toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                      background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -84,8 +84,8 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
   # Create the stacked column chart with a minimalist Datawrapper-like design
   hc <- highchart() %>%
     hc_chart(type = chart_type, zoomType = "xy", backgroundColor = if (background_transparent) "transparent" else NULL) %>%
-    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "center") %>%
-    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666")) %>%
+    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "left") %>%
+    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666"), align = "left") %>%
     hc_xAxis(categories = xAxis$categories, title = xAxis$title, labels = xAxis$labels, gridLineWidth = xAxis$gridLineWidth) %>%
     hc_yAxis(min = yAxis$min, title = yAxis$title, labels = yAxis$labels, gridLineWidth = yAxis$gridLineWidth, gridLineColor = yAxis$gridLineColor) %>%
     hc_plotOptions(series = list(stacking = stacking_option, borderWidth = 0, dataLabels = list(enabled = FALSE),
@@ -122,18 +122,21 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
   # Add legend only if group_col is not FALSE
   if (show_legend) {
     hc <- hc %>%
-      hc_legend(title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")), layout = if (legend_position == "top") "horizontal" else "vertical",
-                align = if (legend_position == "top") "center" else "right",
-                verticalAlign = if (legend_position == "top") "top" else "middle",
-                symbolHeight = 12,
-                symbolWidth = 12,
-                symbolRadius = 0,
-                itemStyle = list(
-                  fontSize = "12px",
-                  fontWeight = "normal",
-                  color = "#666666"
-                ),
-                itemMarginTop = if (legend_position == "top") 5 else NULL)
+      hc_legend(
+        title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")),
+        layout = "horizontal",  # Fixed to horizontal layout
+        align = "left",         # Align to the left
+        verticalAlign = "top",  # Fixed position below the subtitle
+        symbolHeight = 12,
+        symbolWidth = 12,
+        symbolRadius = 0,
+        itemStyle = list(
+          fontSize = "12px",
+          fontWeight = "normal",
+          color = "#666666"
+        ),
+        itemMarginTop = 5
+      )
   } else {
     hc <- hc %>%
       hc_legend(enabled = FALSE) # Disable legend if no grouping
@@ -231,9 +234,9 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 #
 # hc <- StatA.bar(
 #   mtcars_long,
-#   group_col = F,
+#   group_col = "cyl",
 #   measure_col = "gear",
-#   value_col = "cyl",
+#   value_col = "Mean",
 #   title = "Average Measurements of Iris Species",
 #   subtitle = "Data from Fisher's Iris dataset",
 #   x_axis_title = "Measurement Type",
@@ -244,7 +247,6 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   legend_position = "top",
 #   toolbox_sum = TRUE
 # )
 # hc
@@ -255,7 +257,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Line Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
                        palette = "viridis", horizontal = FALSE, source_text = "Source",
-                       background_transparent = FALSE, legend_position = "right", toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -299,8 +301,8 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
   # Create the line chart with a minimalist Datawrapper-like design
   hc <- highchart() %>%
     hc_chart(type = chart_type, zoomType = "xy", backgroundColor = if (background_transparent) "transparent" else NULL) %>%
-    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "center") %>%
-    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666")) %>%
+    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "left") %>%
+    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666"), align = "left") %>%
     hc_xAxis(categories = xAxis$categories, title = xAxis$title, labels = xAxis$labels, gridLineWidth = xAxis$gridLineWidth) %>%
     hc_yAxis(min = yAxis$min, title = yAxis$title, labels = yAxis$labels, gridLineWidth = yAxis$gridLineWidth, gridLineColor = yAxis$gridLineColor) %>%
     hc_plotOptions(line = list(dataLabels = list(enabled = FALSE), enableMouseTracking = TRUE)) # Adjust for line chart options
@@ -320,10 +322,12 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
       )
   }
 
+  # Fixed legend configuration (horizontal, aligned left, below subtitle)
   hc <- hc %>%
-    hc_legend(title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")), layout = if (legend_position == "top") "horizontal" else "vertical",
-              align = if (legend_position == "top") "center" else "right",
-              verticalAlign = if (legend_position == "top") "top" else "middle",
+    hc_legend(title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")),
+              layout = "horizontal",  # Horizontal legend
+              align = "left",         # Align to the left
+              verticalAlign = "top",  # Position legend below the subtitle
               symbolHeight = 12,
               symbolWidth = 12,
               symbolRadius = 0,
@@ -332,7 +336,10 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
                 fontWeight = "normal",
                 color = "#666666"
               ),
-              itemMarginTop = if (legend_position == "top") 5 else NULL) %>%
+              itemMarginTop = 5)  # Add some margin to space out items in the legend
+
+  # Tooltip configuration based on sum or mean
+  hc <- hc %>%
     hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
                formatter = if (toolbox_sum) JS("
     function() {
@@ -433,11 +440,9 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 #   y_axis_title = "Average Value",
 #   legend_title = "Species",
 #   palette = "Accent",
-#   stacked = TRUE,
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   legend_position = "top",
 #   toolbox_sum = TRUE
 # )
 # hc

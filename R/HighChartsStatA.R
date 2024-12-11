@@ -449,11 +449,11 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 
 
 ### StatA.area ####################################################################################################
-# Define the function for area plots with stacking option
+# Define the function
 StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Area Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
-                       palette = "viridis", horizontal = FALSE, stacked = FALSE, source_text = "Source",
-                       background_transparent = FALSE, legend_position = "right", toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                       palette = "viridis", horizontal = FALSE, source_text = "Source",
+                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -482,6 +482,9 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
     }
   }
 
+  # Determine chart type and axis swap
+  chart_type <- "area"
+
   # Define xAxis and yAxis based on orientation
   xAxis <- list(categories = unique_measurements, title = list(text = x_axis_title, style = list(marginBottom = 40)), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0)
   yAxis <- list(min = 0, title = list(text = y_axis_title), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, gridLineColor = "#e0e0e0")
@@ -493,12 +496,12 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
 
   # Create the area chart with a minimalist Datawrapper-like design
   hc <- highchart() %>%
-    hc_chart(type = "area", zoomType = "xy", backgroundColor = if (background_transparent) "transparent" else NULL) %>%
-    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "center") %>%
-    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666")) %>%
+    hc_chart(type = chart_type, zoomType = "xy", backgroundColor = if (background_transparent) "transparent" else NULL) %>%
+    hc_title(text = title, style = list(fontSize = "16px", fontWeight = "normal", color = "#333333"), align = "left") %>%
+    hc_subtitle(text = subtitle, style = list(fontSize = "12px", color = "#666666"), align = "left") %>%
     hc_xAxis(categories = xAxis$categories, title = xAxis$title, labels = xAxis$labels, gridLineWidth = xAxis$gridLineWidth) %>%
     hc_yAxis(min = yAxis$min, title = yAxis$title, labels = yAxis$labels, gridLineWidth = yAxis$gridLineWidth, gridLineColor = yAxis$gridLineColor) %>%
-    hc_plotOptions(area = list(stacking = if (stacked) "normal" else NULL, dataLabels = list(enabled = FALSE), enableMouseTracking = TRUE, fillOpacity = 0.5))
+    hc_plotOptions(area = list(stacking = "normal", dataLabels = list(enabled = FALSE), enableMouseTracking = TRUE)) # Adjust for stacked area chart options
 
   # Add series for each group
   for (i in seq_along(unique_groups)) {
@@ -515,10 +518,12 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       )
   }
 
+  # Fixed legend configuration (horizontal, aligned left, below subtitle)
   hc <- hc %>%
-    hc_legend(title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")), layout = if (legend_position == "top") "horizontal" else "vertical",
-              align = if (legend_position == "top") "center" else "right",
-              verticalAlign = if (legend_position == "top") "top" else "middle",
+    hc_legend(title = list(text = legend_title, style = list(fontSize = "14px", fontWeight = "normal", color = "#666666")),
+              layout = "horizontal",  # Horizontal legend
+              align = "left",         # Align to the left
+              verticalAlign = "top",  # Position legend below the subtitle
               symbolHeight = 12,
               symbolWidth = 12,
               symbolRadius = 0,
@@ -527,9 +532,11 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
                 fontWeight = "normal",
                 color = "#666666"
               ),
-              itemMarginTop = if (legend_position == "top") 5 else NULL) %>%
-    hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
-               formatter = if (toolbox_sum) JS("
+              itemMarginTop = 5)  # Add some margin to space out items in the legend
+
+  # Tooltip configuration based on sum or mean
+  tooltip_formatter <- if (toolbox_sum) {
+    JS("
     function() {
       var points = this.points;
       var sum = 0;
@@ -543,8 +550,10 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(2);  // Check if sum is an integer; if not, format to 2 decimals
       s += '<br/><span style=\"font-weight: normal;\"><i>Summe:</i></span> <i><b>' + sumFormatted + '</b></i>';
       return s;
-    }")
-               else if (toolbox_mean) JS("
+    }
+  ")
+  } else if (toolbox_mean) {
+    JS("
     function() {
       var points = this.points;
       var sum = 0;
@@ -560,33 +569,24 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(2);  // Check if average is an integer; if not, format to 2 decimals
       s += '<br/><span style=\"font-weight: normal;\"><i>Mittelwert:</i></span> <i><b>' + avgFormatted + '</b></i>';
       return s;
-    }")
-               else JS("
+    }
+  ")
+  } else {
+    JS("
     function() {
       var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
       this.points.forEach(function(point) {
         s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
       });
       return s;
-    }")
-    ) %>%
-    hc_exporting(
-      enabled = TRUE,
-      buttons = list(contextButton = list(
-        symbolStroke = if (background_transparent) "#666666" else NULL,
-        theme = list(
-          fill = if (background_transparent) "transparent" else NULL,
-          states = list(
-            hover = list(
-              fill = if (background_transparent) "transparent" else NULL
-            ),
-            select = list(
-              fill = if (background_transparent) "transparent" else NULL
-            )
-          )
-        )
-      ))
-    ) %>%
+    }
+  ")
+  }
+
+  # Tooltip configuration based on sum or mean
+  hc <- hc %>%
+    hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc",
+               borderRadius = 3, borderWidth = 1, padding = 8, formatter = tooltip_formatter) %>%
     hc_add_theme(
       hc_theme(
         colors = palette_colors,
@@ -598,13 +598,17 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
         legend = list(itemStyle = list(fontSize = "12px", color = "#666666")),
         tooltip = list(backgroundColor = "#ffffff", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8)
       )
-    ) %>%
-    hc_credits(enabled = TRUE, text = source_text, position = list(align = "left", x = 10, y = -5),
+    )
+
+  # Increase bottom margin to accommodate source text with controlled distance
+  hc <- hc %>%
+    hc_chart(marginBottom = 80) %>%
+    hc_credits(enabled = TRUE, text = source_text,
+               position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
 
   return(hc)
 }
-
 
 # # Example usage with the iris dataset in long format
 # mtcars_long <- mtcars %>%
@@ -616,22 +620,19 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
 #   mtcars_long,
 #   group_col = "Measurement",
 #   measure_col = "gear",
-#   value_col = "cyl",
+#   value_col = "Mean",
 #   title = "Average Measurements of Iris Species",
 #   subtitle = "Data from Fisher's Iris dataset",
 #   x_axis_title = "Measurement Type",
 #   y_axis_title = "Average Value",
 #   legend_title = "Species",
 #   palette = "Accent",
-#   stacked = TRUE,
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   legend_position = "top",
 #   toolbox_sum = TRUE
 # )
 # hc
-
 
 ### StatA.dot ####################################################################################################
 # Define the function for dot plots

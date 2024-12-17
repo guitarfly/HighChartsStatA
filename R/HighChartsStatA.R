@@ -142,48 +142,123 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
       hc_legend(enabled = FALSE) # Disable legend if no grouping
   }
 
+  tooltip_function <- if (stacked) {
+    if (toolbox_sum) {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var total = 0;",
+        "  points.forEach(function(point) {",
+        "    total += point.y;",  # Sum of all stack values
+        "  });",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "  });",
+        "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
+        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+        "  return s;",
+        "}"
+      ))
+    } else if (toolbox_mean) {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var total = 0;",
+        "  points.forEach(function(point) {",
+        "    total += point.y;",  # Sum of all stack values
+        "  });",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "  });",
+        "  var avg = total / points.length;",  # Calculate mean
+        "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+        "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+        "  return s;",
+        "}"
+      ))
+    } else {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var total = 0;",
+        "  points.forEach(function(point) {",
+        "    total += point.y;",  # Sum of all stack values
+        "  });",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "  });",
+        "  return s;",
+        "}"
+      ))
+    }
+  } else {
+    if (toolbox_sum) {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var total = 0;",
+        "  points.forEach(function(point) {",
+        "    total += point.y;",  # Sum of all series values
+        "  });",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "  });",
+        "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
+        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+        "  return s;",
+        "}"
+      ))
+    } else if (toolbox_mean) {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var total = 0;",
+        "  points.forEach(function(point) {",
+        "    total += point.y;",  # Sum of all series values
+        "  });",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "  });",
+        "  var avg = total / points.length;",  # Calculate mean
+        "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+        "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+        "  return s;",
+        "}"
+      ))
+    } else {
+      JS(paste0(
+        "function() {",
+        "  var points = this.points;",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  points.forEach(function(point) {",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "  });",
+        "  return s;",
+        "}"
+      ))
+    }
+  }
+
+
   hc <- hc %>%
-    hc_tooltip(shared = TRUE, valueDecimals = toolbox_decimals, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
-               formatter = if (toolbox_sum) JS(paste0(
-                 "function() {",
-                 "  var points = this.points;",
-                 "  var sum = 0;",
-                 "  points.forEach(function(point) {",
-                 "    sum += point.y;",
-                 "  });",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
-                 "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
-                 "  return s;",
-                 "}"))
-               else if (toolbox_mean) JS(paste0(
-                 "function() {",
-                 "  var points = this.points;",
-                 "  var sum = 0;",
-                 "  var count = points.length;",
-                 "  points.forEach(function(point) {",
-                 "    sum += point.y;",
-                 "  });",
-                 "  var avg = sum / count;",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
-                 "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
-                 "  return s;",
-                 "}"))
-               else JS(paste0(
-                 "function() {",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  this.points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  return s;",
-                 "}"))) %>%
+    hc_tooltip(
+      shared = TRUE,
+      valueDecimals = toolbox_decimals,
+      backgroundColor = "#ffffffE6",
+      borderColor = "#cccccc",
+      borderRadius = 3,
+      borderWidth = 1,
+      padding = 8,
+      formatter = tooltip_function
+    ) %>%
     hc_exporting(
       enabled = TRUE,
       buttons = list(contextButton = list(
@@ -225,30 +300,24 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 }
 
 
-# # Example usage with the iris dataset in long format
-# mtcars_long <- mtcars %>%
-#   pivot_longer(cols = -c(cyl, gear), names_to = "Measurement", values_to = "Value") %>%
-#   group_by(cyl, gear, Measurement) %>%
-#   summarise(Mean = mean(Value), .groups = 'drop')
-#
 # hc <- StatA.bar(
-#   mtcars_long,
-#   group_col = "cyl",
-#   measure_col = "gear",
-#   value_col = "Mean",
-#   title = "Average Measurements of Iris Species",
-#   subtitle = "Data from Fisher's Iris dataset",
-#   x_axis_title = "Measurement Type",
-#   y_axis_title = "Average Value",
-#   legend_title = "Species",
-#   palette = "Accent",
-#   stacked = TRUE,
-#   horizontal = FALSE,
-#   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
+#   data_test,
+#   group_col = "Datum_Jahr",
+#   measure_col = "Nationalitaet",
+#   value_col = "Aufenthaltsdauer",
+#   title = "",
+#   subtitle = "",
+#   x_axis_title = "",
+#   y_axis_title = "Logiernächte",
+#   legend_title = "",
+#   palette = rev(ColStatA::pastel3),
+#   source_text = "Quelle: Tourismus",
+#   stacked = T,
+#   horizontal = F,
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE,
-#   toolbox_mean = FALSE,
-#   toolbox_decimals = 1,
+#   toolbox_sum = T,
+#   toolbox_mean = F,
+#   toolbox_decimals = 3,
 #   axis_margin = 130
 # )
 # hc
@@ -258,7 +327,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 # Define the function
 StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Line Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
-                       palette = "viridis", horizontal = FALSE, source_text = "Source",
+                       palette = "viridis", source_text = "Source",
                        background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE, toolbox_decimals = 2, axis_margin = 80) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
@@ -294,11 +363,6 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
   # Define xAxis and yAxis based on orientation
   xAxis <- list(categories = unique_measurements, title = list(text = x_axis_title, style = list(marginBottom = 40)), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0)
   yAxis <- list(min = 0, title = list(text = y_axis_title), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, gridLineColor = "#e0e0e0")
-
-  if (horizontal) {
-    xAxis <- list(min = 0, title = list(text = y_axis_title), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, gridLineColor = "#e0e0e0")
-    yAxis <- list(categories = unique_measurements, title = list(text = x_axis_title, style = list(marginBottom = 40)), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, tickLength = 0)
-  }
 
   # Create the line chart with a minimalist Datawrapper-like design
   hc <- highchart() %>%
@@ -424,29 +488,22 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 }
 
 
-# # Example usage with the iris dataset in long format
-# mtcars_long <- mtcars %>%
-#   pivot_longer(cols = -c(cyl, gear), names_to = "Measurement", values_to = "Value") %>%
-#   group_by(cyl, gear, Measurement) %>%
-#   summarise(Mean = mean(Value), .groups = 'drop')
-#
 # hc <- StatA.line(
-#   mtcars_long,
-#   group_col = "Measurement",
-#   measure_col = "gear",
-#   value_col = "cyl",
-#   title = "Average Measurements of Iris Species",
-#   subtitle = "Data from Fisher's Iris dataset",
-#   x_axis_title = "Measurement Type",
-#   y_axis_title = "Average Value",
-#   legend_title = "Species",
-#   palette = "Accent",
-#   horizontal = FALSE,
-#   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
+#   data_test,
+#   group_col = "Datum_Jahr",
+#   measure_col = "Nationalitaet",
+#   value_col = "Aufenthaltsdauer",
+#   title = "",
+#   subtitle = "",
+#   x_axis_title = "",
+#   y_axis_title = "Logiernächte",
+#   legend_title = "",
+#   palette = rev(ColStatA::pastel3),
+#   source_text = "Quelle: Tourismus",
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE,
-#   toolbox_mean = FALSE,
-#   toolbox_decimals = 1,
+#   toolbox_sum = F,
+#   toolbox_mean = F,
+#   toolbox_decimals = 3,
 #   axis_margin = 130
 # )
 # hc
@@ -456,7 +513,7 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 # Define the function
 StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Area Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
-                       palette = "viridis", horizontal = FALSE, source_text = "Source",
+                       palette = "viridis", source_text = "Source",
                        background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE, toolbox_decimals = 2, axis_margin = 80) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
@@ -492,11 +549,6 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
   # Define xAxis and yAxis based on orientation
   xAxis <- list(categories = unique_measurements, title = list(text = x_axis_title, style = list(marginBottom = 40)), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0)
   yAxis <- list(min = 0, title = list(text = y_axis_title), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, gridLineColor = "#e0e0e0")
-
-  if (horizontal) {
-    xAxis <- list(min = 0, title = list(text = y_axis_title), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, gridLineColor = "#e0e0e0")
-    yAxis <- list(categories = unique_measurements, title = list(text = x_axis_title, style = list(marginBottom = 40)), labels = list(style = list(fontSize = "12px", color = "#666666")), gridLineWidth = 0, tickLength = 0)
-  }
 
   # Create the area chart with a minimalist Datawrapper-like design
   hc <- highchart() %>%
@@ -543,15 +595,16 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
     JS(paste0(
       "function() {",
       "  var points = this.points;",
-      "  var sum = 0;",
+      "  var total = 0;",
       "  points.forEach(function(point) {",
-      "    sum += point.y;",
+      "    total += point.y;",  # Sum of all stack values
       "  });",
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
       "  points.forEach(function(point) {",
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
       "  });",
-      "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
+      "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
       "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
       "  return s;",
       "}"))
@@ -559,16 +612,16 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
     JS(paste0(
       "function() {",
       "  var points = this.points;",
-      "  var sum = 0;",
-      "  var count = points.length;",
+      "  var total = 0;",
       "  points.forEach(function(point) {",
-      "    sum += point.y;",
+      "    total += point.y;",  # Sum of all stack values
       "  });",
-      "  var avg = sum / count;",
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
       "  points.forEach(function(point) {",
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
       "  });",
+      "  var avg = total / points.length;",  # Calculate mean
       "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
       "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
       "  return s;",
@@ -576,9 +629,15 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
   } else {
     JS(paste0(
       "function() {",
+      "  var points = this.points;",
+      "  var total = 0;",
+      "  points.forEach(function(point) {",
+      "    total += point.y;",  # Sum of all stack values
+      "  });",
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-      "  this.points.forEach(function(point) {",
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "  points.forEach(function(point) {",
+      "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
       "  });",
       "  return s;",
       "}"))
@@ -611,32 +670,27 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
   return(hc)
 }
 
-# # Example usage with the iris dataset in long format
-# mtcars_long <- mtcars %>%
-#   pivot_longer(cols = -c(cyl, gear), names_to = "Measurement", values_to = "Value") %>%
-#   group_by(cyl, gear, Measurement) %>%
-#   summarise(Mean = mean(Value), .groups = 'drop')
-#
+
 # hc <- StatA.area(
-#   mtcars_long,
-#   group_col = "Measurement",
-#   measure_col = "gear",
-#   value_col = "Mean",
-#   title = "Average Measurements of Iris Species",
-#   subtitle = "Data from Fisher's Iris dataset",
-#   x_axis_title = "Measurement Type",
-#   y_axis_title = "Average Value",
-#   legend_title = "Species",
-#   palette = "Accent",
-#   horizontal = FALSE,
-#   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
+#   data_test,
+#   group_col = "Datum_Jahr",
+#   measure_col = "Nationalitaet",
+#   value_col = "Aufenthaltsdauer",
+#   title = "",
+#   subtitle = "",
+#   x_axis_title = "",
+#   y_axis_title = "Logiernächte",
+#   legend_title = "",
+#   palette = rev(ColStatA::pastel3),
+#   source_text = "Quelle: Tourismus",
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE,
-#   toolbox_mean = FALSE,
-#   toolbox_decimals = 1,
+#   toolbox_sum = T,
+#   toolbox_mean = F,
+#   toolbox_decimals = 5,
 #   axis_margin = 130
 # )
 # hc
+
 
 ### StatA.dot ####################################################################################################
 # Define the function for dot plots

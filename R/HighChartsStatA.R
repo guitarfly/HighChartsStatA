@@ -30,7 +30,7 @@ insert_line_breaks <- function(label, max_length = 20) {
 StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, title = "Stacked Column Chart", subtitle = NULL,
                       x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
                       palette = "viridis", stacked = TRUE, horizontal = FALSE, source_text = "Source",
-                      background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                      background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE, toolbox_decimals = 2, axis_margin = 80) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -143,48 +143,47 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
   }
 
   hc <- hc %>%
-    hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
-               formatter = if (toolbox_sum) JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(2);  // Check if sum is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Summe:</i></span> <i><b>' + sumFormatted + '</b></i>';
-      return s;
-    }")
-               else if (toolbox_mean) JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      var count = points.length;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var avg = sum / count;  // Calculate average
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(2);  // Check if avg is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Durchschnitt:</i></span> <i><b>' + avgFormatted + '</b></i>';
-      return s;
-    }")
-               else JS("
-    function() {
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      this.points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      return s;
-    }")
-    ) %>%
+    hc_tooltip(shared = TRUE, valueDecimals = toolbox_decimals, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
+               formatter = if (toolbox_sum) JS(paste0(
+                 "function() {",
+                 "  var points = this.points;",
+                 "  var sum = 0;",
+                 "  points.forEach(function(point) {",
+                 "    sum += point.y;",
+                 "  });",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
+                 "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+                 "  return s;",
+                 "}"))
+               else if (toolbox_mean) JS(paste0(
+                 "function() {",
+                 "  var points = this.points;",
+                 "  var sum = 0;",
+                 "  var count = points.length;",
+                 "  points.forEach(function(point) {",
+                 "    sum += point.y;",
+                 "  });",
+                 "  var avg = sum / count;",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+                 "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+                 "  return s;",
+                 "}"))
+               else JS(paste0(
+                 "function() {",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  this.points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  return s;",
+                 "}"))) %>%
     hc_exporting(
       enabled = TRUE,
       buttons = list(contextButton = list(
@@ -217,7 +216,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 
   # Increase bottom margin to accommodate source text with controlled distance
   hc <- hc %>%
-    hc_chart(marginBottom = 80) %>%
+    hc_chart(marginBottom = axis_margin) %>%
     hc_credits(enabled = TRUE, text = source_text,
                position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
@@ -247,7 +246,10 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE
+#   toolbox_sum = TRUE,
+#   toolbox_mean = FALSE,
+#   toolbox_decimals = 1,
+#   axis_margin = 130
 # )
 # hc
 
@@ -257,7 +259,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
 StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Line Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
                        palette = "viridis", horizontal = FALSE, source_text = "Source",
-                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE, toolbox_decimals = 2, axis_margin = 80) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -340,48 +342,47 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 
   # Tooltip configuration based on sum or mean
   hc <- hc %>%
-    hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
-               formatter = if (toolbox_sum) JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(2);  // Check if sum is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Summe:</i></span> <i><b>' + sumFormatted + '</b></i>';
-      return s;
-    }")
-               else if (toolbox_mean) JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      var count = points.length;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var avg = sum / count;  // Calculate average
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(2);  // Check if average is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Mittelwert:</i></span> <i><b>' + avgFormatted + '</b></i>';
-      return s;
-    }")
-               else JS("
-    function() {
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      this.points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      return s;
-    }")
-    ) %>%
+    hc_tooltip(shared = TRUE, valueDecimals = toolbox_decimals, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
+               formatter = if (toolbox_sum) JS(paste0(
+                 "function() {",
+                 "  var points = this.points;",
+                 "  var sum = 0;",
+                 "  points.forEach(function(point) {",
+                 "    sum += point.y;",
+                 "  });",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
+                 "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+                 "  return s;",
+                 "}"))
+               else if (toolbox_mean) JS(paste0(
+                 "function() {",
+                 "  var points = this.points;",
+                 "  var sum = 0;",
+                 "  var count = points.length;",
+                 "  points.forEach(function(point) {",
+                 "    sum += point.y;",
+                 "  });",
+                 "  var avg = sum / count;",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+                 "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+                 "  return s;",
+                 "}"))
+               else JS(paste0(
+                 "function() {",
+                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+                 "  this.points.forEach(function(point) {",
+                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+                 "  });",
+                 "  return s;",
+                 "}"))) %>%
     hc_exporting(
       enabled = TRUE,
       buttons = list(contextButton = list(
@@ -414,7 +415,7 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 
   # Increase bottom margin to accommodate source text with controlled distance
   hc <- hc %>%
-    hc_chart(marginBottom = 80) %>%
+    hc_chart(marginBottom = axis_margin) %>%
     hc_credits(enabled = TRUE, text = source_text,
                position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
@@ -443,7 +444,10 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE
+#   toolbox_sum = TRUE,
+#   toolbox_mean = FALSE,
+#   toolbox_decimals = 1,
+#   axis_margin = 130
 # )
 # hc
 
@@ -453,7 +457,7 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
 StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Area Chart", subtitle = NULL,
                        x_axis_title = "Measurements", y_axis_title = "Mean Value", legend_title = NULL,
                        palette = "viridis", horizontal = FALSE, source_text = "Source",
-                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE) {
+                       background_transparent = FALSE, toolbox_sum = FALSE, toolbox_mean = FALSE, toolbox_decimals = 2, axis_margin = 80) {
 
   # Ensure only one of toolbox_sum or toolbox_mean is TRUE
   if (toolbox_sum && toolbox_mean) {
@@ -536,56 +540,53 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
 
   # Tooltip configuration based on sum or mean
   tooltip_formatter <- if (toolbox_sum) {
-    JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(2);  // Check if sum is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Summe:</i></span> <i><b>' + sumFormatted + '</b></i>';
-      return s;
-    }
-  ")
+    JS(paste0(
+      "function() {",
+      "  var points = this.points;",
+      "  var sum = 0;",
+      "  points.forEach(function(point) {",
+      "    sum += point.y;",
+      "  });",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "  });",
+      "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
+      "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+      "  return s;",
+      "}"))
   } else if (toolbox_mean) {
-    JS("
-    function() {
-      var points = this.points;
-      var sum = 0;
-      var count = points.length;
-      points.forEach(function(point) {
-        sum += point.y;
-      });
-      var avg = sum / count;  // Calculate average
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(2);  // Check if average is an integer; if not, format to 2 decimals
-      s += '<br/><span style=\"font-weight: normal;\"><i>Mittelwert:</i></span> <i><b>' + avgFormatted + '</b></i>';
-      return s;
-    }
-  ")
+    JS(paste0(
+      "function() {",
+      "  var points = this.points;",
+      "  var sum = 0;",
+      "  var count = points.length;",
+      "  points.forEach(function(point) {",
+      "    sum += point.y;",
+      "  });",
+      "  var avg = sum / count;",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "  });",
+      "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+      "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+      "  return s;",
+      "}"))
   } else {
-    JS("
-    function() {
-      var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';  // Increase font size of the title without bold
-      this.points.forEach(function(point) {
-        s += '<br/>' + '<span style=\"color:' + point.color + '\">\u25CF</span> <span style=\"font-weight: normal;\">' + point.series.name + ':</span> <b>' + point.y + '</b>';
-      });
-      return s;
-    }
-  ")
+    JS(paste0(
+      "function() {",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  this.points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+      "  });",
+      "  return s;",
+      "}"))
   }
 
   # Tooltip configuration based on sum or mean
   hc <- hc %>%
-    hc_tooltip(shared = TRUE, valueDecimals = NA, backgroundColor = "#ffffffE6", borderColor = "#cccccc",
+    hc_tooltip(shared = TRUE, valueDecimals = toolbox_decimals, backgroundColor = "#ffffffE6", borderColor = "#cccccc",
                borderRadius = 3, borderWidth = 1, padding = 8, formatter = tooltip_formatter) %>%
     hc_add_theme(
       hc_theme(
@@ -602,7 +603,7 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
 
   # Increase bottom margin to accommodate source text with controlled distance
   hc <- hc %>%
-    hc_chart(marginBottom = 80) %>%
+    hc_chart(marginBottom = axis_margin) %>%
     hc_credits(enabled = TRUE, text = source_text,
                position = list(align = "left", x = 15, y = -20),  # Adjusted x to align with y-axis labels and y to position below the x-axis
                style = list(fontSize = "10px", color = "#666666", fontFamily = "Arial"))
@@ -630,7 +631,10 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
 #   horizontal = FALSE,
 #   source_text = "Source: Fisher's Iris dataset, lkdsfjdslkfjdsflkdsjfalkfjölkjsaödlfjsadölkfjdsaölfkjdsafölkdsajföldsakjföldsakjf",
 #   background_transparent = TRUE,
-#   toolbox_sum = TRUE
+#   toolbox_sum = TRUE,
+#   toolbox_mean = FALSE,
+#   toolbox_decimals = 1,
+#   axis_margin = 130
 # )
 # hc
 

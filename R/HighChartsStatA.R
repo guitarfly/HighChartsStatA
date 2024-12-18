@@ -146,19 +146,19 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
     if (toolbox_sum) {
       JS(paste0(
         "function() {",
-        "  var points = this.points;",
-        "  var total = 0;",
+        "  var points = this.points;",  # Get all points in the tooltip
+        "  var total = 0;",  # Variable to calculate sum or total
         "  points.forEach(function(point) {",
-        "    total += point.y;",  # Sum of all stack values
+        "    total += point.y;",  # Sum all values in the stack or series",
         "  });",
-        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",  # Add X axis label to the tooltip",
         "  points.forEach(function(point) {",
-        "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage for each segment",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",  # Format with thin space",
         "  });",
-        "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
-        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
-        "  return s;",
+        "  var sumFormatted = total.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",  # Format total sum with thin space",
+        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",  # Add sum",
+        "  return s;",  # Return the tooltip content",
         "}"
       ))
     } else if (toolbox_mean) {
@@ -172,10 +172,10 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
         "  points.forEach(function(point) {",
         "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",  # Format with thin space",
         "  });",
-        "  var avg = total / points.length;",  # Calculate mean
-        "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+        "  var avg = parseFloat(total / points.length);",  # Calculate mean
+        "  var avgFormatted = avg.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
         "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
         "  return s;",
         "}"
@@ -191,7 +191,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
         "  points.forEach(function(point) {",
         "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",  # Format with thin space",
         "  });",
         "  return s;",
         "}"
@@ -201,18 +201,18 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
     if (toolbox_sum) {
       JS(paste0(
         "function() {",
-        "  var points = this.points;",
-        "  var total = 0;",
+        "  var points = this.points;",  # Get all points in the tooltip
+        "  var total = 0;",  # Variable to calculate sum or total
         "  points.forEach(function(point) {",
-        "    total += point.y;",  # Sum of all series values
+        "    total += point.y;",  # Sum all values in the stack or series",
         "  });",
-        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+        "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",  # Add X axis label to the tooltip",
         "  points.forEach(function(point) {",
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",  # Format with thin space",
         "  });",
-        "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
-        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
-        "  return s;",
+        "  var sumFormatted = total.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",  # Format total sum with thin space",
+        "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",  # Add sum",
+        "  return s;",  # Return the tooltip content",
         "}"
       ))
     } else if (toolbox_mean) {
@@ -221,14 +221,14 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         "  var points = this.points;",
         "  var total = 0;",
         "  points.forEach(function(point) {",
-        "    total += point.y;",  # Sum of all series values
+        "    total += point.y;",  # Sum of all stack values
         "  });",
         "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
         "  points.forEach(function(point) {",
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",  # Format with thin space",
         "  });",
-        "  var avg = total / points.length;",  # Calculate mean
-        "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+        "  var avg = parseFloat(total / points.length);",  # Calculate mean
+        "  var avgFormatted = avg.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
         "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
         "  return s;",
         "}"
@@ -246,7 +246,6 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
       ))
     }
   }
-
 
   hc <- hc %>%
     hc_tooltip(
@@ -404,49 +403,57 @@ StatA.line <- function(data_long, group_col, measure_col, value_col, title = "Li
               ),
               itemMarginTop = 5)  # Add some margin to space out items in the legend
 
+  tooltip_function <- if (toolbox_sum) {
+    JS(paste0(
+      "function() {",
+      "  var points = this.points;",
+      "  var sum = 0;",
+      "  points.forEach(function(point) {",
+      "    sum += point.y;",
+      "  });",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",
+      "  });",
+      "  var sumFormatted = sum.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
+      "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
+      "  return s;",
+      "}"
+    ))
+  } else if (toolbox_mean) {
+    JS(paste0(
+      "function() {",
+      "  var points = this.points;",
+      "  var sum = 0;",
+      "  var count = points.length;",
+      "  points.forEach(function(point) {",
+      "    sum += point.y;",
+      "  });",
+      "  var avg = parseFloat(sum / count);",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",
+      "  });",
+      "  var avgFormatted = avg.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
+      "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
+      "  return s;",
+      "}"
+    ))
+  } else {
+    JS(paste0(
+      "function() {",
+      "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
+      "  this.points.forEach(function(point) {",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",
+      "  });",
+      "  return s;",
+      "}"))
+  }
+
   # Tooltip configuration based on sum or mean
   hc <- hc %>%
     hc_tooltip(shared = TRUE, valueDecimals = toolbox_decimals, backgroundColor = "#ffffffE6", borderColor = "#cccccc", borderRadius = 3, borderWidth = 1, padding = 8,
-               formatter = if (toolbox_sum) JS(paste0(
-                 "function() {",
-                 "  var points = this.points;",
-                 "  var sum = 0;",
-                 "  points.forEach(function(point) {",
-                 "    sum += point.y;",
-                 "  });",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  var sumFormatted = (sum % 1 === 0) ? sum : sum.toFixed(", toolbox_decimals, ");",
-                 "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
-                 "  return s;",
-                 "}"))
-               else if (toolbox_mean) JS(paste0(
-                 "function() {",
-                 "  var points = this.points;",
-                 "  var sum = 0;",
-                 "  var count = points.length;",
-                 "  points.forEach(function(point) {",
-                 "    sum += point.y;",
-                 "  });",
-                 "  var avg = sum / count;",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
-                 "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
-                 "  return s;",
-                 "}"))
-               else JS(paste0(
-                 "function() {",
-                 "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-                 "  this.points.forEach(function(point) {",
-                 "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
-                 "  });",
-                 "  return s;",
-                 "}"))) %>%
+               formatter = tooltip_function) %>%
     hc_exporting(
       enabled = TRUE,
       buttons = list(contextButton = list(
@@ -602,9 +609,9 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
       "  points.forEach(function(point) {",
       "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",
       "  });",
-      "  var sumFormatted = (total % 1 === 0) ? total : total.toFixed(", toolbox_decimals, ");",
+      "  var sumFormatted = total.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
       "  s += '<br/><i>Summe:</i> <b>' + sumFormatted + '</b>';",
       "  return s;",
       "}"))
@@ -619,10 +626,10 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
       "  points.forEach(function(point) {",
       "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",
       "  });",
-      "  var avg = total / points.length;",  # Calculate mean
-      "  var avgFormatted = (avg % 1 === 0) ? avg : avg.toFixed(", toolbox_decimals, ");",
+      "  var avg = parseFloat(total / points.length);",  # Calculate mean
+      "  var avgFormatted = avg.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009');",
       "  s += '<br/><i>Durchschnitt:</i> <b>' + avgFormatted + '</b>';",
       "  return s;",
       "}"))
@@ -637,7 +644,7 @@ StatA.area <- function(data_long, group_col, measure_col, value_col, title = "Ar
       "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
       "  points.forEach(function(point) {",
       "    var percentage = (point.y / total * 100).toFixed(1);",  # Calculate percentage
-      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + ' (' + percentage + '%)</b>';",
+      "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + ' (' + percentage + '%)</b>';",
       "  });",
       "  return s;",
       "}"))

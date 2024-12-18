@@ -239,7 +239,7 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
         "  var points = this.points;",
         "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
         "  points.forEach(function(point) {",
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ") + '</b>';",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + points.toFixed(", toolbox_decimals, ") + '</b>';",
         "  });",
         "  return s;",
         "}"

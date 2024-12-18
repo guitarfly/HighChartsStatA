@@ -236,14 +236,12 @@ StatA.bar <- function(data_long, group_col = FALSE, measure_col, value_col, titl
     } else {
       JS(paste0(
         "function() {",
-        "  var points = this.points;",
         "  var s = '<span style=\"font-size: 14px;\">' + this.x + '</span>';",
-        "  points.forEach(function(point) {",
-        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + points.toFixed(", toolbox_decimals, ") + '</b>';",
+        "  this.points.forEach(function(point) {",
+        "    s += '<br/><span style=\"color:' + point.color + '\">\u25CF</span> ' + point.series.name + ': <b>' + point.y.toFixed(", toolbox_decimals, ").replace(/\\B(?=(\\d{3})+(?!\\d))/g, '\\u2009') + '</b>';",
         "  });",
         "  return s;",
-        "}"
-      ))
+        "}"))
     }
   }
 
